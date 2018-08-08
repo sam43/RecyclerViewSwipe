@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
         // only ItemTouchHelper.LEFT added to detect Right to Left swipe
         // if you want both Right -> Left and Left -> Right
         // add pass ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT as param
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT, this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
 
@@ -80,6 +80,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 // Row is swiped from recycler view
                 // remove it from adapter
+                if(direction == ItemTouchHelper.RIGHT) {
+                    Log.d("swipe", "dir to RIGHT");
+                } else {
+                    Log.d("swipe", "dir to LEFT");
+                }
+
             }
 
             @Override
@@ -135,29 +141,38 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
         if (viewHolder instanceof CartListAdapter.MyViewHolder) {
-            // get the removed item name to display it in snack bar
-            String name = cartList.get(viewHolder.getAdapterPosition()).getName();
 
-            // backup of removed item for undo purpose
-            final Item deletedItem = cartList.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
 
-            // remove the item from recycler view
-            mAdapter.removeItem(viewHolder.getAdapterPosition());
+            if(direction == ItemTouchHelper.RIGHT) {
+                Log.d("swipe", "dir to RIGHT");
+                // remove the item from recycler view
+                mAdapter.removeItem(viewHolder.getAdapterPosition());
+            } else {
+                // get the removed item name to display it in snack bar
+                String name = cartList.get(viewHolder.getAdapterPosition()).getName();
 
-            // showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+                // backup of removed item for undo purpose
+                final Item deletedItem = cartList.get(viewHolder.getAdapterPosition());
+                final int deletedIndex = viewHolder.getAdapterPosition();
 
-                    // undo is selected, restore the deleted item
-                    mAdapter.restoreItem(deletedItem, deletedIndex);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
+                // remove the item from recycler view
+                mAdapter.removeItem(viewHolder.getAdapterPosition());
+
+                // showing snack bar with Undo option
+                Snackbar snackbar = Snackbar
+                        .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
+                snackbar.setAction("UNDO", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        // undo is selected, restore the deleted item
+                        mAdapter.restoreItem(deletedItem, deletedIndex);
+                    }
+                });
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
+                Log.d("swipe", "dir to LEFT");
+            }
         }
     }
 
